@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI Travel Assistant Korea 🌏</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;--bg4:#2a2f45;
+  --blue:#4a9eff;--blue2:#1a6fd4;--blue-dim:#1e3a5f;
+  --green:#00d084;--green-dim:#003d24;
+  --text:#ffffff;--text2:#a0a8c0;--text3:#606880;
+  --border:#2a2f45;--border2:#3a4060;
+  --radius:12px;--radius-sm:8px;--radius-pill:50px;
+}
+html,body{background:var(--bg);min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:var(--text)}
+
+.shell{max-width:480px;width:100%;margin:0 auto;background:var(--bg);min-height:100vh;border-left:1px solid var(--border2);border-right:1px solid var(--border2)}
+
+/* hero */
+.hero{background:var(--bg);padding:28px 20px 20px;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--green-dim);border:1px solid var(--green);border-radius:var(--radius-pill);padding:5px 14px;font-size:12px;color:var(--green);margin-bottom:16px}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:26px;font-weight:700;line-height:1.25;margin-bottom:10px;letter-spacing:-0.5px}
+.hero h1 span{color:var(--blue)}
+.hero-sub{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:3px}
+.hero-sub-en{font-size:11px;color:var(--text3);line-height:1.6}
+
+/* tabs */
+.tabs-wrap{background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr)}
+.tab{padding:12px 4px 10px;font-size:11px;font-weight:500;color:var(--text3);background:none;border:none;cursor:pointer;text-align:center;line-height:1.3;transition:all .2s;border-bottom:2px solid transparent;font-family:inherit}
+.tab-en{display:block;font-size:9px;font-weight:400;color:var(--text3);margin-top:1px;opacity:.7}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.tab.on .tab-en{color:var(--blue);opacity:.8}
+
+/* panels */
+.panels{background:var(--bg2)}
+.panel{display:none;padding:16px}.panel.on{display:block}
+
+/* inputs */
+.inp{width:100%;padding:11px 14px;font-size:14px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);font-family:inherit;outline:none;transition:border .15s}
+.inp:focus{border-color:var(--blue)}
+textarea.inp{resize:vertical;min-height:90px;padding:11px 44px 11px 14px}
+select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23606880' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+
+/* lang row */
+.lang-row{display:grid;grid-template-columns:1fr 40px 1fr;gap:8px;align-items:center;margin-bottom:10px}
+.swap-btn{width:40px;height:40px;border-radius:50%;background:var(--blue-dim);border:1px solid var(--blue2);color:var(--blue);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.swap-btn:hover{background:var(--blue2)}
+
+/* mic fab */
+.rel{position:relative}
+.mic-fab{position:absolute;right:9px;top:9px;width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mic-fab.on{background:#3d1a1a;border-color:#e04040;animation:pulse .9s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* translate btn */
+.tr-btn{width:100%;margin-top:10px;padding:13px;font-size:14px;font-weight:600;border-radius:var(--radius-sm);border:none;background:var(--blue);color:#fff;cursor:pointer;transition:all .15s;font-family:inherit}
+.tr-btn:hover{background:var(--blue2)}
+.tr-btn:disabled{opacity:.4;cursor:wait}
+
+/* result */
+.result-box{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:13px 44px 13px 14px;min-height:72px;font-size:14px;line-height:1.75;color:var(--text);white-space:pre-wrap;position:relative;margin-top:10px}
+.speak-fab{position:absolute;right:9px;top:9px;width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.speak-fab:disabled{opacity:.3;cursor:default}
+.speak-fab.pl{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.tts-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.tts-row button{padding:5px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-family:inherit}
+.tts-row button:hover{background:var(--bg4)}
+.sl-g{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3)}
+.sl-g input[type=range]{width:60px;accent-color:var(--blue)}
+.muted{color:var(--text3);font-style:italic;font-size:13px}
+.mic-st{font-size:11px;color:var(--text3);margin-top:4px;min-height:14px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.chip{font-size:11px;padding:5px 10px;border:1px solid var(--border2);border-radius:20px;background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--blue);color:var(--blue)}
+
+/* divider / label */
+.sec-lbl{font-size:11px;font-weight:600;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.sec-note{font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.5}
+
+/* location bar */
+.loc-bar{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:12px;cursor:pointer;transition:border .15s}
+.loc-bar:hover{border-color:var(--blue2)}
+.loc-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
+.loc-dot.on{background:var(--green)}
+.loc-txt{font-size:12px;color:var(--text2);flex:1;line-height:1.5}
+.loc-btn{font-size:11px;padding:4px 9px;border-radius:6px;border:1px solid var(--blue2);background:var(--blue-dim);color:var(--blue);cursor:pointer;font-family:inherit;white-space:nowrap}
+
+/* search */
+.search-row{display:flex;gap:6px;margin-bottom:10px}
+.search-row .inp{flex:1}
+.search-btn{padding:11px 14px;border-radius:var(--radius-sm);border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
+.search-btn:hover{background:var(--blue2)}
+.search-btn:disabled{opacity:.4;cursor:wait}
+
+/* filter chips */
+.fc-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.fc{font-size:11px;padding:4px 10px;border:1px solid var(--border2);border-radius:20px;background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s}
+.fc.on{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
+
+/* place cards */
+.place-card{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:13px;margin-bottom:8px}
+.place-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.place-name{font-size:14px;font-weight:500;color:var(--text)}
+.bdg{font-size:10px;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-left:6px}
+.open-bdg{background:var(--green-dim);color:var(--green);border:1px solid #005030}
+.closed-bdg{background:#2a1010;color:#e06060;border:1px solid #4a1010}
+.meta{font-size:12px;color:var(--text2);line-height:1.65;margin-top:3px}
+.stars{color:#f4c430}
+.place-btns{display:flex;gap:5px;margin-top:10px}
+.place-btns a{flex:1;font-size:11px;padding:7px 5px;border-radius:6px;border:1px solid var(--border2);background:var(--bg4);color:var(--text2);text-align:center;text-decoration:none;transition:all .15s}
+.place-btns a:hover{border-color:var(--blue);color:var(--blue)}
+
+/* bus */
+.route-tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;margin-right:3px}
+.rb{background:#0d2a4a;color:#4a9eff;border:1px solid #1a4a8a}
+.rg{background:#0a2a14;color:#00c060;border:1px solid #0a5020}
+.rr{background:#2a0a0a;color:#e06060;border:1px solid #5a1010}
+.ry{background:#2a1e00;color:#f4a020;border:1px solid #5a3a00}
+.bus-card{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:13px;margin-bottom:8px}
+.bus-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.arr-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)}
+.arr-row:last-of-type{border:none}
+.soon{color:var(--green);font-weight:500}
+.tip-box{font-size:11px;color:var(--text2);margin-bottom:7px;padding:7px 10px;background:var(--blue-dim);border-radius:6px;border:1px solid var(--border2);line-height:1.6}
+
+/* bus mode toggle */
+.mode-row{display:flex;gap:6px;margin-bottom:12px}
+.mode-btn{flex:1;padding:8px 4px;font-size:11px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;text-align:center;line-height:1.4}
+.mode-btn.on{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
+
+/* taxi */
+.taxi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.taxi-app{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:13px 8px;text-align:center;cursor:pointer;transition:all .15s}
+.taxi-app:hover{border-color:var(--blue);background:var(--bg4)}
+.taxi-icon{font-size:22px;margin-bottom:5px}
+.taxi-name{font-size:13px;font-weight:500;color:var(--text)}
+.taxi-desc{font-size:10px;color:var(--text2);margin-top:2px;line-height:1.4}
+.taxi-en{font-size:9px;color:var(--text3);margin-top:1px}
+.call-btn{width:100%;padding:12px 14px;font-size:13px;font-weight:500;border-radius:var(--radius-sm);background:var(--green-dim);border:1px solid var(--green);color:var(--green);margin-bottom:7px;text-align:left;cursor:pointer;font-family:inherit;transition:all .15s;display:block}
+.call-btn:hover{background:#005030}
+.tip-card{background:var(--blue-dim);border:1px solid var(--blue2);border-radius:var(--radius);padding:12px 14px}
+.tip-row{font-size:12px;color:#8ab8e8;line-height:1.7;padding:4px 0;border-bottom:1px solid #1e3a5f}
+.tip-row:last-child{border:none}
+.tip-row strong{color:var(--blue);font-weight:500}
+.tip-en{font-size:10px;color:var(--text3);display:block;margin-top:1px}
+
+.empty{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:13px;line-height:1.6}
+.loading{text-align:center;padding:2rem;color:var(--text2);font-size:13px}
+
+/* API key notice */
+.api-notice{background:#2a1e00;border:1px solid #5a3a00;border-radius:var(--radius-sm);padding:10px 13px;margin-bottom:14px;font-size:12px;color:#f4a020;line-height:1.6}
+.api-notice a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="hero">
+    <div class="hero-badge">✦ 실시간 AI 번역 · 완전 무료</div>
+    <h1>언어의 장벽 없이<br><span>여행하세요</span></h1>
+    <div class="hero-sub">19개 언어 · 음성으로 말하면 바로 번역<br>외국인과 지금 바로 소통하세요</div>
+    <div class="hero-sub-en">19 languages · Speak and translate instantly<br>Communicate with foreigners right now</div>
+  </div>
+
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab on" onclick="go('tr')">번역<span class="tab-en">Translate</span></button>
+      <button class="tab" onclick="go('rest')">음식점<span class="tab-en">Food</span></button>
+      <button class="tab" onclick="go('hotel')">숙박<span class="tab-en">Stay</span></button>
+      <button class="tab" onclick="go('bus')">버스<span class="tab-en">Bus</span></button>
+      <button class="tab" onclick="go('taxi')">🚕택시<span class="tab-en">Taxi</span></button>
+    </div>
+  </div>
+
+  <div class="panels">
+
+    <!-- ══ 번역 ══ -->
+    <div id="p-tr" class="panel on">
+      <div class="lang-row">
+        <select class="inp" id="sl">
+          <option value="Korean">🇰🇷 한국어</option>
+          <option value="English">🇺🇸 English</option>
+          <option value="Japanese">🇯🇵 日本語</option>
+          <option value="Chinese">🇨🇳 中文</option>
+          <option value="French">🇫🇷 Français</option>
+          <option value="Spanish">🇪🇸 Español</option>
+          <option value="German">🇩🇪 Deutsch</option>
+          <option value="Vietnamese">🇻🇳 Tiếng Việt</option>
+          <option value="Thai">🇹🇭 ภาษาไทย</option>
+          <option value="Arabic">🇸🇦 العربية</option>
+        </select>
+        <button class="swap-btn" onclick="swapL()">⇄</button>
+        <select class="inp" id="tl">
+          <option value="English">🇺🇸 English</option>
+          <option value="Korean">🇰🇷 한국어</option>
+          <option value="Japanese">🇯🇵 日本語</option>
+          <option value="Chinese">🇨🇳 中文</option>
+          <option value="French">🇫🇷 Français</option>
+          <option value="Spanish">🇪🇸 Español</option>
+          <option value="German">🇩🇪 Deutsch</option>
+          <option value="Vietnamese">🇻🇳 Tiếng Việt</option>
+          <option value="Thai">🇹🇭 ภาษาไทย</option>
+          <option value="Arabic">🇸🇦 العربية</option>
+        </select>
+      </div>
+      <div class="rel">
+        <textarea class="inp" id="src" placeholder="번역할 내용을 입력하거나 🎤 버튼으로 말하세요&#10;Type here or tap 🎤 to speak"></textarea>
+        <button class="mic-fab" id="mic-tr" onclick="toggleMic('tr')">🎤</button>
+      </div>
+      <div class="mic-st" id="mic-tr-st"></div>
+      <button class="tr-btn" id="tr-btn" onclick="doTr()">번역하기 · Translate ↗</button>
+      <div class="result-box" id="tr-out">
+        <span class="muted">번역 결과가 여기에 표시됩니다<br>Translation appears here</span>
+        <button class="speak-fab" id="speak-btn" onclick="ttsPlay()" disabled>🔊</button>
+      </div>
+      <div class="tts-row">
+        <button onclick="ttsStop()">■ Stop</button>
+        <div class="sl-g">Speed
+          <input type="range" id="rate-sl" min="0.5" max="2" step="0.1" value="1"
+            oninput="document.getElementById('rv').textContent=parseFloat(this.value).toFixed(1)">
+          <span id="rv">1.0</span>x
+        </div>
+        <div class="sl-g">Vol
+          <input type="range" id="vol-sl" min="0" max="1" step="0.1" value="1"
+            oninput="document.getElementById('vv').textContent=parseFloat(this.value).toFixed(1)">
+          <span id="vv">1.0</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="sec-lbl">✈️ 여행 필수 표현 · Quick Phrases</div>
+      <div class="chips">
+        <span class="chip" onclick="setP(this)">얼마예요? / How much?</span>
+        <span class="chip" onclick="setP(this)">화장실 어디예요? / Restroom?</span>
+        <span class="chip" onclick="setP(this)">이것 주세요 / I'll have this</span>
+        <span class="chip" onclick="setP(this)">도와주세요 / Help me</span>
+        <span class="chip" onclick="setP(this)">지하철역? / Subway station?</span>
+        <span class="chip" onclick="setP(this)">영수증 주세요 / Receipt please</span>
+        <span class="chip" onclick="setP(this)">천천히 말해주세요 / Speak slowly</span>
+        <span class="chip" onclick="setP(this)">예약했어요 / I have a reservation</span>
+        <span class="chip" onclick="setP(this)">택시 불러주세요 / Call a taxi</span>
+        <span class="chip" onclick="setP(this)">병원 어디예요? / Hospital?</span>
+      </div>
+    </div>
+
+    <!-- ══ 음식점 ══ -->
+    <div id="p-rest" class="panel">
+      <div class="loc-bar" onclick="getLocation('rest')">
+        <div class="loc-dot" id="rest-loc-dot"></div>
+        <div class="loc-txt" id="rest-loc-txt">📍 위치를 가져오면 주변 음식점을 추천해드려요<br><span style="font-size:10px;color:var(--text3)">Tap to use your current location</span></div>
+        <button class="loc-btn" id="rest-loc-btn">위치 가져오기</button>
+      </div>
+      <div class="search-row">
+        <input class="inp" id="rest-q" placeholder="지역·음식 직접 검색 (예: 명동 한식)" onkeydown="if(event.key==='Enter')searchP('rest')">
+        <button class="search-btn" id="rest-btn" onclick="searchP('rest')">검색 ↗</button>
+      </div>
+      <div class="fc-row">
+        <span class="fc on" onclick="fct(this)">전체</span>
+        <span class="fc" onclick="fct(this)">한식</span>
+        <span class="fc" onclick="fct(this)">양식</span>
+        <span class="fc" onclick="fct(this)">일식</span>
+        <span class="fc" onclick="fct(this)">중식</span>
+        <span class="fc" onclick="fct(this)">카페</span>
+        <span class="fc" onclick="fct(this)">분식</span>
+      </div>
+      <div id="rest-res"><p class="empty">📍 위치를 가져오거나 검색어를 입력하세요<br>Use location or type a search term</p></div>
+    </div>
+
+    <!-- ══ 숙박 ══ -->
+    <div id="p-hotel" class="panel">
+      <div class="loc-bar" onclick="getLocation('hotel')">
+        <div class="loc-dot" id="hotel-loc-dot"></div>
+        <div class="loc-txt" id="hotel-loc-txt">📍 위치를 가져오면 주변 숙박을 추천해드려요<br><span style="font-size:10px;color:var(--text3)">Tap to use your current location</span></div>
+        <button class="loc-btn" id="hotel-loc-btn">위치 가져오기</button>
+      </div>
+      <div class="search-row">
+        <input class="inp" id="hotel-q" placeholder="지역 직접 검색 (예: 강남, 홍대, 부산)" onkeydown="if(event.key==='Enter')searchP('hotel')">
+        <button class="search-btn" id="hotel-btn" onclick="searchP('hotel')">검색 ↗</button>
+      </div>
+      <div class="fc-row">
+        <span class="fc on" onclick="fct(this)">전체</span>
+        <span class="fc" onclick="fct(this)">호텔</span>
+        <span class="fc" onclick="fct(this)">게스트하우스</span>
+        <span class="fc" onclick="fct(this)">모텔</span>
+      </div>
+      <div id="hotel-res"><p class="empty">📍 위치를 가져오거나 지역을 입력하세요<br>Use location or enter an area name</p></div>
+    </div>
+
+    <!-- ══ 버스 ══ -->
+    <div id="p-bus" class="panel">
+      <div class="loc-bar" onclick="getLocation('bus')">
+        <div class="loc-dot" id="bus-loc-dot"></div>
+        <div class="loc-txt" id="bus-loc-txt">📍 위치를 가져오면 주변 버스를 알려드려요<br><span style="font-size:10px;color:var(--text3)">Tap to find buses near you</span></div>
+        <button class="loc-btn" id="bus-loc-btn">위치 가져오기</button>
+      </div>
+      <div class="mode-row">
+        <button class="mode-btn on" id="mode-route" onclick="setBusMode('route')">🗺 노선 찾기<br><span style="font-size:10px;opacity:.8">출발→도착 입력</span></button>
+        <button class="mode-btn" id="mode-num" onclick="setBusMode('num')">🔢 번호 조회<br><span style="font-size:10px;opacity:.8">버스 번호로 검색</span></button>
+        <button class="mode-btn" id="mode-near" onclick="setBusMode('near')">📡 주변 버스<br><span style="font-size:10px;opacity:.8">위치 기반 조회</span></button>
+      </div>
+
+      <div id="bus-route-mode">
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+          <input class="inp" id="bus-from" placeholder="출발지 (예: 명동, Hongdae)">
+          <input class="inp" id="bus-to" placeholder="목적지 (예: 강남역, Gyeongbokgung)">
+        </div>
+        <button class="search-btn" style="width:100%;padding:12px" id="bus-route-btn" onclick="searchBusRoute()">노선 추천받기 ↗</button>
+      </div>
+
+      <div id="bus-num-mode" style="display:none">
+        <div class="search-row">
+          <input class="inp" id="bus-q" placeholder="버스 번호 (예: 273, 402)" onkeydown="if(event.key==='Enter')searchBusNum()">
+          <button class="search-btn" id="bus-btn" onclick="searchBusNum()">조회 ↗</button>
+        </div>
+        <div style="margin-bottom:10px">
+          <span class="route-tag rb">간선</span>
+          <span class="route-tag rg">지선</span>
+          <span class="route-tag rr">광역</span>
+          <span class="route-tag ry">순환</span>
+        </div>
+      </div>
+
+      <div id="bus-near-mode" style="display:none">
+        <p class="sec-note">📡 현재 위치 기반으로 주변 버스 정류장과 노선 안내<br>Location-based nearby bus stops &amp; routes</p>
+        <button class="search-btn" style="width:100%;padding:12px" id="bus-near-btn" onclick="searchNearBus()">주변 버스 찾기 ↗</button>
+      </div>
+
+      <div id="bus-res" style="margin-top:12px">
+        <p class="empty">출발지와 목적지를 입력하거나<br>위치를 가져와 주변 버스를 조회하세요<br><span style="font-size:10px">Enter origin &amp; destination or use location</span></p>
+      </div>
+    </div>
+
+    <!-- ══ 택시 ══ -->
+    <div id="p-taxi" class="panel">
+      <p class="sec-note">앱 또는 전화로 쉽게 택시를 부르세요<br>Easy taxi booking for seniors &amp; travelers in Korea</p>
+      <div class="sec-lbl">앱으로 호출 · Book via App</div>
+      <div class="taxi-grid">
+        <div class="taxi-app" onclick="openTaxi('kakao')">
+          <div class="taxi-icon">🟡</div>
+          <div class="taxi-name">카카오택시</div>
+          <div class="taxi-desc">가장 많이 쓰는<br>국민 택시 앱</div>
+          <div class="taxi-en">Most popular in Korea</div>
+        </div>
+        <div class="taxi-app" onclick="openTaxi('uber')">
+          <div class="taxi-icon">⚫</div>
+          <div class="taxi-name">우버 Uber</div>
+          <div class="taxi-desc">외국인에게<br>편리한 영어 앱</div>
+          <div class="taxi-en">Great for visitors</div>
+        </div>
+        <div class="taxi-app" onclick="openTaxi('onda')">
+          <div class="taxi-icon">🔵</div>
+          <div class="taxi-name">온다 ONDA</div>
+          <div class="taxi-desc">법인택시 전문<br>깔끔한 서비스</div>
+          <div class="taxi-en">Premium corporate taxi</div>
+        </div>
+        <div class="taxi-app" onclick="openTaxi('macaron')">
+          <div class="taxi-icon">🟣</div>
+          <div class="taxi-name">마카롱택시</div>
+          <div class="taxi-desc">친절 기사님<br>여성 안심 택시</div>
+          <div class="taxi-en">Safe &amp; friendly drivers</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="sec-lbl" style="margin-bottom:8px">📞 전화로 호출 · Call by Phone</div>
+      <a class="call-btn" href="tel:16442255">📞 카카오택시 · 1644-2255</a>
+      <a class="call-btn" href="tel:15882504">📞 서울택시 콜센터 · 1588-2504</a>
+      <a class="call-btn" href="tel:16002255">📞 마카롱택시 · 1600-2255</a>
+      <div class="divider"></div>
+      <div class="sec-lbl" style="margin-bottom:8px">💡 어르신·여행자 팁 · Tips</div>
+      <div class="tip-card">
+        <div class="tip-row"><strong>앱이 어려우시면</strong> 전화 한 통으로 바로 부를 수 있어요<span class="tip-en">Hard to use the app? Just call!</span></div>
+        <div class="tip-row"><strong>목적지 모르면</strong> 번역 탭에서 번역 후 기사님께 보여주세요<span class="tip-en">Use Translate tab → show driver your destination</span></div>
+        <div class="tip-row"><strong>모범택시</strong>(검은색) 요금 약 2배, 영어 가능 많아요<span class="tip-en">Black deluxe taxis cost ~2x but often English-speaking</span></div>
+        <div class="tip-row"><strong>기본요금</strong> 서울 4,800원 · 심야(00~04시) 20% 할증<span class="tip-en">Base ₩4,800 · +20% surcharge midnight–4am</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ★ 여기에 Google AI Studio에서 발급받은 API 키를 넣으세요
+const GEMINI_API_KEY = 'AIzaSyAsow7gWCndQswae00XGJwtRVn06NGlXuU';
+const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+
+let lastTr='',lastTrLang='',recog=null;
+let userLat=null,userLng=null;
+const LC={Korean:'ko-KR',English:'en-US',Japanese:'ja-JP',Chinese:'zh-CN',French:'fr-FR',Spanish:'es-ES',German:'de-DE',Vietnamese:'vi-VN',Thai:'th-TH',Arabic:'ar-SA'};
+
+async function claude(prompt,sys){
+  const fullPrompt = sys ? `[Instructions: ${sys}]\n\n${prompt}` : prompt;
+  const r=await fetch(`${GEMINI_API}?key=${GEMINI_API_KEY}`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      contents:[{role:'user',parts:[{text:fullPrompt}]}],
+      generationConfig:{maxOutputTokens:1500,temperature:0.3,candidateCount:1},
+      safetySettings:[
+        {category:'HARM_CATEGORY_HARASSMENT',threshold:'BLOCK_NONE'},
+        {category:'HARM_CATEGORY_HATE_SPEECH',threshold:'BLOCK_NONE'},
+        {category:'HARM_CATEGORY_SEXUALLY_EXPLICIT',threshold:'BLOCK_NONE'},
+        {category:'HARM_CATEGORY_DANGEROUS_CONTENT',threshold:'BLOCK_NONE'}
+      ]
+    })
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'API 오류 '+r.status);}
+  const d=await r.json();
+  if(d.error)throw new Error(d.error.message);
+  const text=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+  if(!text)throw new Error('응답이 비어있습니다');
+  return text;
+}
+
+function go(id){
+  const ids=['tr','rest','hotel','bus','taxi'];
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',ids[i]===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('p-'+id).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function swapL(){
+  const s=document.getElementById('sl'),t=document.getElementById('tl');
+  [s.value,t.value]=[t.value,s.value];
+}
+function setP(el){
+  document.getElementById('src').value=el.textContent;
+  document.getElementById('src').focus();
+}
+
+/* ── Translate ── */
+async function doTr(){
+  const txt=document.getElementById('src').value.trim();if(!txt)return;
+  const src=document.getElementById('sl').value,tgt=document.getElementById('tl').value;
+  const btn=document.getElementById('tr-btn'),out=document.getElementById('tr-out');
+  btn.disabled=true;btn.textContent='번역 중… Translating…';
+  out.innerHTML='<span class="muted">번역 중입니다…</span>';
+  try{
+    const res=await claude(
+      `Translate from ${src} to ${tgt}. Output ONLY the translated text:\n${txt}`,
+      'Professional translator. Output translated text only. No explanation, no preamble.'
+    );
+    lastTr=res.trim();lastTrLang=tgt;
+    out.innerHTML='';
+    out.appendChild(document.createTextNode(lastTr));
+    const sb=document.createElement('button');
+    sb.className='speak-fab';sb.id='speak-btn';sb.textContent='🔊';sb.onclick=ttsPlay;
+    sb.style.cssText='position:absolute;right:9px;top:9px;width:28px;height:28px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--bg4);border:1px solid var(--border2);color:var(--text2);cursor:pointer';
+    out.appendChild(sb);
+  }catch(e){
+    out.innerHTML='<span class="muted">오류가 발생했습니다. 잠시 후 다시 시도해주세요.</span>';
+  }
+  btn.disabled=false;btn.textContent='번역하기 · Translate ↗';
+}
+
+/* ── TTS ── */
+function ttsPlay(){
+  if(!lastTr)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(lastTr);
+  u.lang=LC[lastTrLang]||'en-US';
+  u.rate=parseFloat(document.getElementById('rate-sl').value);
+  u.volume=parseFloat(document.getElementById('vol-sl').value);
+  const sb=document.getElementById('speak-btn');
+  u.onstart=()=>{if(sb)sb.classList.add('pl')};
+  u.onend=u.onerror=()=>{if(sb)sb.classList.remove('pl')};
+  speechSynthesis.speak(u);
+}
+function ttsStop(){
+  speechSynthesis.cancel();
+  const sb=document.getElementById('speak-btn');
+  if(sb)sb.classList.remove('pl');
+}
+
+/* ── Mic ── */
+function toggleMic(t){
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!R){alert('Chrome 브라우저에서만 음성 인식이 지원됩니다.\nVoice input works in Chrome only.');return;}
+  const btn=document.getElementById('mic-'+t),st=document.getElementById('mic-'+t+'-st');
+  if(recog){recog.stop();recog=null;btn.classList.remove('on');if(st)st.textContent='';return;}
+  recog=new R();
+  recog.lang=LC[document.getElementById('sl').value]||'ko-KR';
+  recog.continuous=false;recog.interimResults=false;
+  recog.onstart=()=>{btn.classList.add('on');if(st)st.textContent='🔴 듣고 있어요… 다시 탭하면 중지';};
+  recog.onresult=e=>{
+    document.getElementById('src').value=e.results[0][0].transcript;
+    if(st){st.textContent='✓ 음성 입력 완료!';setTimeout(()=>st.textContent='',2000);}
+  };
+  recog.onend=()=>{btn.classList.remove('on');recog=null;};
+  recog.onerror=()=>{btn.classList.remove('on');if(st)st.textContent='인식 실패 · Failed';recog=null;};
+  recog.start();
+}
+
+/* ── Filter ── */
+function fct(el){
+  el.closest('.fc-row').querySelectorAll('.fc').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+/* ── Location ── */
+function getLocation(tab){
+  const dot=document.getElementById(tab+'-loc-dot');
+  const txt=document.getElementById(tab+'-loc-txt');
+  const btn=document.getElementById(tab+'-loc-btn');
+  txt.innerHTML='위치 가져오는 중…<br><span style="font-size:10px;color:var(--text3)">Getting your location…</span>';
+  btn.textContent='⏳';
+  if(!navigator.geolocation){
+    txt.innerHTML='위치 서비스가 지원되지 않아요. 검색어로 찾아보세요.';
+    btn.textContent='재시도';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      userLat=pos.coords.latitude;
+      userLng=pos.coords.longitude;
+      dot.classList.add('on');
+      txt.innerHTML=`✅ 위치 확인됨 · Location detected<br><span style="font-size:10px;color:var(--text3)">${userLat.toFixed(4)}, ${userLng.toFixed(4)}</span>`;
+      btn.textContent='✓ 완료';
+      if(tab==='rest')searchP('rest');
+      else if(tab==='hotel')searchP('hotel');
+      else if(tab==='bus'){setBusMode('near');searchNearBus();}
+    },
+    ()=>{
+      txt.innerHTML='위치 접근이 거부되었습니다. 검색어로 직접 찾아보세요.<br><span style="font-size:10px;color:var(--text3)">Location denied. Please search manually.</span>';
+      btn.textContent='재시도';
+    }
+  );
+}
+
+/* ── Render Place Cards ── */
+function stars(n){return'★'.repeat(Math.round(n))+'☆'.repeat(5-Math.round(n));}
+
+function renderCards(places,cid){
+  const c=document.getElementById(cid);
+  if(!places||!places.length){
+    c.innerHTML='<p class="empty">검색 결과가 없습니다<br>No results found</p>';
+    return;
+  }
+  c.innerHTML=places.map(p=>`
+    <div class="place-card">
+      <div class="place-top">
+        <span class="place-name">${p.name}</span>
+        <span class="bdg ${p.open?'open-bdg':'closed-bdg'}">${p.open?'영업중':'영업종료'}</span>
+      </div>
+      <div class="meta"><span class="stars">${stars(p.rating)}</span> ${p.rating} · ${p.reviews}개 리뷰</div>
+      <div class="meta">📍 ${p.address}</div>
+      ${p.price?`<div class="meta">💰 ${p.price}</div>`:''}
+      ${p.hours?`<div class="meta">🕐 ${p.hours}</div>`:''}
+      ${p.distance?`<div class="meta">🚶 ${p.distance}</div>`:''}
+      <div class="place-btns">
+        <a href="https://map.naver.com/search/${encodeURIComponent(p.name)}" target="_blank">네이버 지도 ↗</a>
+        <a href="https://www.google.com/maps/search/${encodeURIComponent(p.name+' '+p.address)}" target="_blank">구글 지도 ↗</a>
+      </div>
+    </div>`).join('');
+}
+
+async function searchP(type){
+  const isR=type==='rest';
+  const manualQ=document.getElementById(isR?'rest-q':'hotel-q').value.trim();
+  const res=document.getElementById(isR?'rest-res':'hotel-res');
+  const btn=document.getElementById(isR?'rest-btn':'hotel-btn');
+  let locInfo='';
+  if(userLat&&userLng) locInfo=`사용자 현재 위치 좌표: 위도 ${userLat.toFixed(4)}, 경도 ${userLng.toFixed(4)}. 이 좌표 기준 가장 가까운 서울/한국 지역의 실제 장소를 추천해줘. `;
+  const query=manualQ||(userLat?'현재 위치 주변':'');
+  if(!query){
+    res.innerHTML='<p class="empty">📍 위치를 가져오거나 검색어를 입력하세요</p>';
+    return;
+  }
+  btn.disabled=true;btn.textContent='검색 중…';
+  res.innerHTML='<p class="loading">🔍 AI가 추천 목록을 만들고 있어요…</p>';
+  const prompt=isR
+    ?`${locInfo}"${query}" 조건으로 한국 음식점 5곳을 추천해줘. 실제로 존재하는 유명한 식당 위주로. JSON 배열만, 설명 없이:\n[{"name":"식당명","address":"서울 구 동 상세주소","rating":4.3,"reviews":1200,"open":true,"price":"1인 15,000원~","hours":"11:00-22:00","distance":"도보 5분"}]`
+    :`${locInfo}"${query}" 조건으로 한국 숙박 5곳을 추천해줘. 실제로 존재하는 숙소 위주로. JSON 배열만, 설명 없이:\n[{"name":"숙소명","address":"서울 구 동 상세주소","rating":4.5,"reviews":800,"open":true,"price":"1박 85,000원~","hours":"체크인 15:00 / 체크아웃 11:00","distance":"지하철 도보 3분"}]`;
+  try{
+    const raw=await claude(prompt,'Respond with valid JSON array only. No markdown fences, no explanation. Use realistic Korean place names and real addresses.');
+    const clean=raw.replace(/```json|```/g,'').trim();
+    renderCards(JSON.parse(clean),isR?'rest-res':'hotel-res');
+  }catch(e){
+    res.innerHTML='<p class="empty">정보를 불러오지 못했습니다. 다시 시도해주세요.<br>Could not load results — please retry.</p>';
+  }
+  btn.disabled=false;btn.textContent='검색 ↗';
+}
+
+/* ── Bus ── */
+let busMode='route';
+function setBusMode(m){
+  busMode=m;
+  ['route','num','near'].forEach(x=>{
+    document.getElementById('mode-'+x).classList.toggle('on',x===m);
+    document.getElementById('bus-'+x+'-mode').style.display=x===m?'block':'none';
+  });
+  document.getElementById('bus-res').innerHTML='<p class="empty">정보를 조회해주세요</p>';
+}
+
+function busClass(n){
+  const v=parseInt(n);
+  if(v>=100&&v<=799)return'rb';
+  if(v>=1000&&v<=5999)return'rg';
+  if(v>=9000)return'rr';
+  return'ry';
+}
+
+function renderBusCards(buses){
+  const res=document.getElementById('bus-res');
+  if(!buses||!buses.length){res.innerHTML='<p class="empty">조회 결과가 없습니다</p>';return;}
+  const now=new Date();
+  res.innerHTML=`<p style="font-size:11px;color:var(--text3);margin-bottom:8px">${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} 기준 · AI 예상 정보 (참고용)</p>`+
+    buses.map(b=>`<div class="bus-card">
+      <div class="bus-top">
+        <span class="route-tag ${busClass(b.busNum)}">${b.busNum}</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text)">${b.stopName||''}</div>
+          <div style="font-size:11px;color:var(--text2)">${b.desc||''}</div>
+        </div>
+      </div>
+      ${b.tip?`<div class="tip-box">💡 ${b.tip}</div>`:''}
+      ${(b.arrivals||[]).map(a=>`<div class="arr-row">
+        <span style="color:var(--text3);font-size:11px">${a.plate||a.info||''}</span>
+        <span class="${a.minutes<=5?'soon':''}" style="font-size:12px">${a.minutes}분 후 · <span style="color:var(--text3)">${a.seats||''}</span></span>
+      </div>`).join('')}
+      <div class="place-btns" style="margin-top:8px">
+        <a href="https://map.naver.com/search/${encodeURIComponent(b.busNum+'번 버스')}" target="_blank">네이버 지도 ↗</a>
+        <a href="https://www.google.com/maps/dir/?api=1" target="_blank">구글 지도 ↗</a>
+      </div>
+    </div>`).join('');
+}
+
+async function searchBusRoute(){
+  const from=document.getElementById('bus-from').value.trim();
+  const to=document.getElementById('bus-to').value.trim();
+  const res=document.getElementById('bus-res');
+  const btn=document.getElementById('bus-route-btn');
+  if(!from||!to){res.innerHTML='<p class="empty">출발지와 목적지를 모두 입력해주세요</p>';return;}
+  btn.disabled=true;btn.textContent='추천 중…';
+  res.innerHTML='<p class="loading">🔍 AI가 최적 노선을 찾는 중…</p>';
+  try{
+    const locInfo=userLat?`사용자 위치: ${userLat.toFixed(4)},${userLng.toFixed(4)}. `:'';
+    const raw=await claude(
+      `${locInfo}서울에서 "${from}"에서 "${to}"로 가는 버스 노선 2~3개를 추천해줘. 실제 서울 버스 노선 기준. JSON 배열만:\n[{"busNum":"273","desc":"명동→강남 경유","stopName":"출발 정류장명","tip":"탑승 후 약 20분, N번 정류장 하차 권장","arrivals":[{"plate":"서울12가3456","minutes":4,"seats":"여유"},{"plate":"서울78나9012","minutes":13,"seats":"보통"}]}]`,
+      'Return valid JSON array only. No markdown. Use realistic Seoul bus routes.'
+    );
+    renderBusCards(JSON.parse(raw.replace(/```json|```/g,'').trim()));
+  }catch{
+    res.innerHTML='<p class="empty">노선 정보를 불러오지 못했습니다. 다시 시도해주세요.</p>';
+  }
+  btn.disabled=false;btn.textContent='노선 추천받기 ↗';
+}
+
+async function searchBusNum(){
+  const q=document.getElementById('bus-q').value.trim();
+  const res=document.getElementById('bus-res');
+  const btn=document.getElementById('bus-btn');
+  if(!q){res.innerHTML='<p class="empty">버스 번호를 입력해주세요</p>';return;}
+  btn.disabled=true;btn.textContent='조회 중…';
+  res.innerHTML='<p class="loading">조회 중…</p>';
+  try{
+    const raw=await claude(
+      `서울 ${q}번 버스 정보. JSON 배열만:\n[{"busNum":"${q}","desc":"전체 노선 간략 설명","stopName":"주요 정류장명","tip":"이 버스의 특징과 이용 팁","arrivals":[{"plate":"서울12가3456","minutes":3,"seats":"여유"},{"plate":"서울78나9012","minutes":11,"seats":"혼잡"}]}]`,
+      'Return valid JSON array only. No markdown.'
+    );
+    renderBusCards(JSON.parse(raw.replace(/```json|```/g,'').trim()));
+  }catch{
+    res.innerHTML='<p class="empty">버스 정보를 불러오지 못했습니다</p>';
+  }
+  btn.disabled=false;btn.textContent='조회 ↗';
+}
+
+async function searchNearBus(){
+  const res=document.getElementById('bus-res');
+  const btn=document.getElementById('bus-near-btn');
+  if(!userLat){res.innerHTML='<p class="empty">📍 먼저 위치를 가져오세요<br>Please get your location first</p>';return;}
+  if(btn)btn.disabled=true;
+  res.innerHTML='<p class="loading">📡 주변 버스 정보를 찾는 중…</p>';
+  try{
+    const raw=await claude(
+      `서울 위도 ${userLat.toFixed(4)}, 경도 ${userLng.toFixed(4)} 근처의 버스 정류장 3곳과 해당 버스 정보. 실제 그 좌표 주변 서울 지역 기준. JSON 배열만:\n[{"busNum":"273","desc":"노선 설명","stopName":"근처 정류장명","tip":"이 정류장까지 도보 약 2분 거리입니다.","arrivals":[{"plate":"서울12가3456","minutes":3,"seats":"여유"}]}]`,
+      'Return valid JSON array only. No markdown. Use coordinates to estimate realistic nearby Seoul bus stops.'
+    );
+    renderBusCards(JSON.parse(raw.replace(/```json|```/g,'').trim()));
+  }catch{
+    res.innerHTML='<p class="empty">주변 버스 정보를 불러오지 못했습니다</p>';
+  }
+  if(btn)btn.disabled=false;
+}
+
+function openTaxi(app){
+  const urls={kakao:'https://t.kakao.com',uber:'https://m.uber.com',onda:'https://ondataxi.com',macaron:'https://macarontaxi.com'};
+  const names={kakao:'카카오택시',uber:'우버(Uber)',onda:'온다택시',macaron:'마카롱택시'};
+  if(confirm(`${names[app]} 앱으로 이동할까요?\nOpen ${names[app]}?`))
+    window.open(urls[app],'_blank');
+}
+
+document.getElementById('src').addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.key==='Enter')doTr();
+});
+</script>
+</body>
+</html>
